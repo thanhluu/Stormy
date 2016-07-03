@@ -3,7 +3,7 @@
 //  Stormy
 //
 //  Created by Luu Tien Thanh on 7/3/16.
-//  Copyright © 2016 Treehouse. All rights reserved.
+//  Copyright © 2016 Luu Tien Thanh. All rights reserved.
 //
 
 import Foundation
@@ -21,14 +21,22 @@ enum APIResult<T> {
     case Failure(ErrorType)
 }
 
+protocol JSONDecodable {
+    init?(JSON: [String: AnyObject])
+}
+
+protocol Endpoint {
+    var baseURL: NSURL { get }
+    var path: String { get }
+    var request: NSURLRequest { get }
+}
+
 protocol APIClient {
     var configuration: NSURLSessionConfiguration { get }
     var session: NSURLSession { get }
     
-    init(config: NSURLSessionConfiguration)
-    
     func JSONTaskWithRequest(request: NSURLRequest, completion: JSONTaskCompletion) -> JSONTask
-    func fetch<T>(request: NSURLRequest, parse: JSON -> T?, completion: APIResult<T> -> Void)
+    func fetch<T: JSONDecodable>(request: NSURLRequest, parse: JSON -> T?, completion: APIResult<T> -> Void)
 }
 
 extension APIClient {
@@ -68,20 +76,22 @@ extension APIClient {
     
     func fetch<T>(request: NSURLRequest, parse: JSON -> T?, completion: APIResult<T> -> Void) {
         let task = JSONTaskWithRequest(request) { json, response, error in
-            guard let json = json else {
-                if let error = error {
-                    completion(.Failure(error))
-                } else {
-                    // TODO: Implement Error Handling
+            dispatch_async(dispatch_get_main_queue()) {
+                guard let json = json else {
+                    if let error = error {
+                        completion(.Failure(error))
+                    } else {
+                        // TODO: Implement Error Handling
+                    }
+                    return
                 }
-                return
-            }
-            
-            if let value = parse(json) {
-                completion(.Success(value))
-            } else {
-                let error = NSError(domain: TRENetworkingErrorDomain, code: UnexpectedResponseError, userInfo: nil)
-                completion(.Failure(error))
+                    
+                if let value = parse(json) {
+                    completion(.Success(value))
+                } else {
+                    let error = NSError(domain: TRENetworkingErrorDomain, code: UnexpectedResponseError, userInfo: nil)
+                    completion(.Failure(error))
+                }
             }
         }
         

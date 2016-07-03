@@ -36,16 +36,18 @@ class ViewController: UIViewController {
     
     private let forecastAPIKey = "bed8463ef6e9d72bbdaf0b8767259b91"
     
+    lazy var forecastAPIClient = ForecastAPIClient(APIKey: "bed8463ef6e9d72bbdaf0b8767259b91")
+    
+    let coordinate = Coordinate(latitude: 21.042849, longitude: 105.8161224)
 
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         
-        let icon = WeatherIcon.PartlyCloudyDay.image
-        let currentWeather = CurrentWeather(temperature: 56.0, humidity: 1.0, precipitationProbability: 1.0, summary: "Wet and rainy!", icon: icon)
+        fetchCurrentWeather()
         
-        display(currentWeather)
-
+//        let icon = WeatherIcon.PartlyCloudyDay.image
+//        let currentWeather = CurrentWeather(temperature: 56.0, humidity: 1.0, precipitationProbability: 1.0, summary: "Wet and rainy!", icon: icon)
 //        let weatherData = NSData(contentsOfURL: forecastURL!)
 //
 //        let json = try! NSJSONSerialization.JSONObjectWithData(weatherData!, options: []) as! [String: AnyObject]
@@ -73,6 +75,20 @@ class ViewController: UIViewController {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
+    
+    func fetchCurrentWeather() {
+        forecastAPIClient.fetchCurrentWeather(coordinate) { result in
+            self.toggleRefreshAnimation(false)
+            
+            switch result {
+            case .Success(let currentWeather):
+                self.display(currentWeather)
+            case .Failure(let error as NSError):
+                self.showAlert("Unable to retrieve forecast", message: error.localizedDescription)
+            default: break
+            }
+        }
+    }
 
     func display(weather: CurrentWeather) {
         currentTemperatureLabel.text = weather.temperatureString
@@ -81,5 +97,29 @@ class ViewController: UIViewController {
         currentSummaryLabel.text = weather.summary
         currentWeatherIcon.image = weather.icon
     }
+    
+    func showAlert(title: String, message: String?, style: UIAlertControllerStyle = .Alert) {
+        let alertControler = UIAlertController(title: title, message: message, preferredStyle: style)
+        let dismissAction = UIAlertAction(title: "OK", style: .Default, handler: nil)
+        alertControler.addAction(dismissAction)
+        
+        presentViewController(alertControler, animated: true, completion: nil)
+    }
+    
+    @IBAction func refreshWeather(sender: AnyObject) {
+        toggleRefreshAnimation(true)
+        fetchCurrentWeather()
+    }
+    
+    func toggleRefreshAnimation(on: Bool) {
+        refreshButton.hidden = on
+        
+        if on {
+            activityIndicator.startAnimating()
+        } else {
+            activityIndicator.stopAnimating()
+        }
+    }
+    
 }
 
