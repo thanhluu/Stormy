@@ -45,13 +45,28 @@ class ViewController: UIViewController {
         let currentWeather = CurrentWeather(temperature: 56.0, humidity: 1.0, precipitationProbability: 1.0, summary: "Wet and rainy!", icon: icon)
         
         display(currentWeather)
+
+//        let weatherData = NSData(contentsOfURL: forecastURL!)
+//
+//        let json = try! NSJSONSerialization.JSONObjectWithData(weatherData!, options: []) as! [String: AnyObject]
+
+//        let baseURL = NSURL(string: "https://api.forecast.io/forecast/\(forecastAPIKey)/")
+//        let forecastURL = NSURL(string: "37.8267,-122.423", relativeToURL: baseURL)
+//        
+//        let configuartion = NSURLSessionConfiguration.defaultSessionConfiguration()
+//        let session = NSURLSession(configuration: configuartion)
+//        
+//        let request = NSURLRequest(URL: forecastURL!)
+//        
+//        let dataTask = session.dataTaskWithRequest(request) { data, response, error in
+//            print(data!)
+//            print("Inside closure in background thread")
+//        }
+//        
+//        print("On the main thread!")
+//        
+//        dataTask.resume()
         
-        let baseURL = NSURL(string: "https://api.forecast.io/forecast/\(forecastAPIKey)/")
-        let forecastURL = NSURL(string: "37.8267,-122.423", relativeToURL: baseURL)
-        
-        let weatherData = NSData(contentsOfURL: forecastURL!)
-        
-        let json = try! NSJSONSerialization.JSONObjectWithData(weatherData!, options: []) as! [String: AnyObject]
     }
 
     override func didReceiveMemoryWarning() {
